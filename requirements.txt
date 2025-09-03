@@ -1,0 +1,7 @@
+# Core dependencies (only what we really need)
+opencv-python>=4.5.0  # For image processing
+numpy>=1.21.0        # Required for OpenCV
+ultralytics>=8.0.0   # For YOLO object detection
+
+# For license plate reading
+easyocr>=1.4.0       # For text recognition

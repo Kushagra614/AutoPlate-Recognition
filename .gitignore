@@ -1,0 +1,43 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Large Files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Model Files (too large for GitHub)
+*.pt
+*.pth
+*.onnx
+*.h5
+
+# Results and Logs
+results/
+logs/
+*.log
+
+# Temporary Files
+*.tmp
+*.temp
+.cache/
