@@ -1,3 +1,14 @@
+# Minimal project requirements
+opencv-python>=4.5.0
+numpy>=1.21.0
+pandas
+easyocr>=1.4.0
+ultralytics>=8.0.0
+torch
+torchvision
+
+# Optional (native build) - required for ByteTrack tracking
+# lap  # install only if you want ByteTrack; may require system build tools
 # Core dependencies (only what we really need)
 opencv-python>=4.5.0  # For image processing
 numpy>=1.21.0        # Required for OpenCV

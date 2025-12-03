@@ -1,3 +1,47 @@
+# AutoPlate-Recognition
+
+Lightweight Automatic License Plate Recognition (ALPR) pipeline using YOLOv8 for vehicle detection and EasyOCR for plate reading.
+
+Quick highlights:
+- Detect vehicles and license plates
+- Read plate text with EasyOCR
+- Track vehicles (ByteTrack if `lap` is installed, else pure-Python centroid fallback)
+- Save per-frame CSV and optional annotated MP4
+
+Quick start
+1. Create and activate a venv:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run demo (preferred):
+
+```bash
+./run_demo.sh car.mp4 ./results
+# or
+python main.py -i car.mp4 -o ./results --save-video ./results/annotated.mp4
+```
+
+Notes
+- To enable ByteTrack install `lap` in the activated venv (may require system build tools). If `lap` is not available the repository will use a centroid tracker fallback.
+- Outputs are written to `./results/` (CSV + optional annotated video).
+
+Important files
+- `main.py` — main pipeline (detection → tracking → OCR)
+- `ocr_utils.py` — OCR and helper functions
+- `missing_data.py` — interpolation for missing detections
+- `visualize.py` — create annotated visualizations from CSV
+
+License: MIT
+Author: Kushagra Vardhan
 # AutoPlate Recognition System
 
 An advanced Automatic License Plate Recognition (ALPR) system using YOLOv8 for vehicle detection and custom models for license plate recognition with real-time tracking capabilities.
