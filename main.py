@@ -1,7 +1,7 @@
 import logging
 import cv2
 from ultralytics import YOLO
-from util import get_car, read_license_plate, write_csv
+from ocr_utils import get_car, read_license_plate, write_csv
 from config_loader import Config
 from pathlib import Path
 import argparse

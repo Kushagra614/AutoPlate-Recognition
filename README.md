@@ -115,7 +115,7 @@ python visualize.py --csv ./results/interpolated.csv --video car.mp4 --output fi
 ```
 AutoPlate-Recognition/
 ├── main.py                 # Main application entry point
-├── util.py                 # Utility functions for OCR and processing
+├── ocr_utils.py            # Utility functions for OCR and processing
 ├── visualize.py            # Visualization tools for results
 ├── missing_data.py         # Data interpolation for missing frames
 ├── models/                 # Trained models directory
