@@ -20,11 +20,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Large Files
-*.mp4
-*.avi
-*.mov
-*.mkv
+
 
 # Model Files (too large for GitHub)
 *.pt
@@ -32,8 +28,7 @@ Thumbs.db
 *.onnx
 *.h5
 
-# Results and Logs
-results/
+#Logs
 logs/
 *.log
 
