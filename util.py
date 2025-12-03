@@ -3,8 +3,14 @@ import cv2
 import numpy as np
 import string
 
-# Initialize the OCR reader
-reader = easyocr.Reader(['en'], gpu=False)
+# Lazy-initialized OCR reader to avoid heavy work at import time
+_reader = None
+
+def get_reader():
+    global _reader
+    if _reader is None:
+        _reader = easyocr.Reader(['en'], gpu=False)
+    return _reader
 
 # Mapping dictionaries for character conversion
 dict_char_to_int = {'O': '0',
@@ -144,6 +150,7 @@ def read_license_plate(license_plate_crop):
     # Preprocess the image to improve OCR accuracy
     preprocessed_plate_crop = preprocess_plate(license_plate_crop)
 
+    reader = get_reader()
     detections = reader.readtext(preprocessed_plate_crop)
 
     for detection in detections:
