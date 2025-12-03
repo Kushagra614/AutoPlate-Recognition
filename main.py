@@ -91,7 +91,7 @@ class CentroidTracker:
 
 
 class LicensePlateDetector:
-    def __init__(self, config_path=None):
+    def __init__(self, config_path=None, use_bytetrack=False):
         self.vehicle_detector = None
         self.plate_detector = None
         self.logger = None
@@ -102,6 +102,8 @@ class LicensePlateDetector:
         self.load_models()
         # simple tracker to avoid optional native deps like 'lap'
         self.centroid_tracker = CentroidTracker()
+        # whether to use ultralytics built-in tracker (ByteTrack) if available
+        self.use_bytetrack = use_bytetrack
 
     def setup_logging(self):
         """Configure logging based on configuration."""
@@ -147,10 +149,25 @@ class LicensePlateDetector:
             raise
 
     def track_vehicles(self, frame):
-        """Detect vehicles in the frame and provide simple IDs using centroid matching.
+        """Detect vehicles in the frame and return (bbox, id) pairs.
 
-        This avoids the external `lap` native dependency required by some ultralytics trackers.
+        If `use_bytetrack` is True, attempt to use ultralytics' built-in tracker
+        (ByteTrack). If that fails or is not enabled, fall back to per-frame
+        detection + centroid-based matching.
         """
+        # Prefer ultralytics tracker when requested
+        if getattr(self, 'use_bytetrack', False):
+            try:
+                results = self.vehicle_detector.track(frame, persist=True, tracker="bytetrack.yaml")
+                if results and results[0].boxes is not None and getattr(results[0].boxes, 'id', None) is not None:
+                    boxes = results[0].boxes.xyxy.cpu().numpy().astype(int).tolist()
+                    track_ids = results[0].boxes.id.cpu().numpy().astype(int).tolist()
+                    return list(zip(boxes, track_ids))
+            except Exception as e:
+                # If tracker fails (e.g., lap not installed), log and fall back
+                self.logger.error(f"ByteTrack tracker error: {e}. Falling back to detection+centroid.")
+
+        # Fallback: per-frame detection + centroid tracker
         try:
             results = self.vehicle_detector(frame)[0]
             boxes = []
@@ -386,20 +403,23 @@ class LicensePlateDetector:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description='License Plate Detection and Recognition')
-    parser.add_argument('--input', required=True, help='Path to input video file')
-    parser.add_argument('--output', help='Output directory for results')
-    parser.add_argument('--config', help='Path to configuration file')
-    parser.add_argument('--display', action='store_true', help='Show realtime annotated video (press q to quit)')
-    parser.add_argument('--save-video', help='Path to save annotated MP4 (e.g. results/annotated.mp4)')
+    parser.add_argument('-i', '--input', required=True, help='Path to input video file')
+    parser.add_argument('-o', '--output', help='Output directory for results (default: ./results)')
+    parser.add_argument('-c', '--config', help='Path to configuration file')
+    parser.add_argument('-d', '--display', action='store_true', help='Show realtime annotated video (press q to quit)')
+    parser.add_argument('-s', '--save-video', help='Path to save annotated MP4 (e.g. results/annotated.mp4)')
+    # Use ByteTrack by default for better tracking; provide a --no-bytetrack flag to disable it
+    parser.add_argument('--no-bytetrack', action='store_false', dest='use_bytetrack', help='Disable ByteTrack and use centroid tracker instead')
+    parser.set_defaults(use_bytetrack=True)
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     args = parser.parse_args()
 
     try:
         # Load configuration
-        detector = LicensePlateDetector(args.config)
+        detector = LicensePlateDetector(args.config, use_bytetrack=args.use_bytetrack)
 
-        # Set output directory from config if not provided
-        output_dir = args.output or detector.config.get('results.save_path', './output')
+        # Set output directory from config if not provided (default: ./results)
+        output_dir = args.output or detector.config.get('results.save_path', './results')
 
         # Set logging level based on verbose flag
         if args.verbose:

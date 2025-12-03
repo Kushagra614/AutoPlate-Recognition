@@ -19,6 +19,7 @@ An advanced Automatic License Plate Recognition (ALPR) system using YOLOv8 for v
 - PyTorch
 - Ultralytics YOLOv8
 - EasyOCR
+ - (Optional, recommended for better tracking) ByteTrack support via `lap>=0.5.12`
 
 ## 🛠️ Installation
 
@@ -39,6 +40,19 @@ An advanced Automatic License Plate Recognition (ALPR) system using YOLOv8 for v
    pip install -r requirements.txt
    ```
 
+4. (Optional) If you want the project to use ByteTrack for more robust multi-object tracking, install the native `lap` package and system build tools (required on many Linux systems):
+
+```bash
+# On Debian/Ubuntu install build tools first (may require sudo)
+sudo apt update && sudo apt install -y build-essential python3-dev
+
+# Activate venv and install lap
+source venv/bin/activate
+pip install lap>=0.5.12
+```
+
+If `lap` fails to install (compilation errors), the project will automatically fall back to a lightweight pure-Python centroid tracker — this is fine for demos but less robust under heavy occlusion.
+
 4. **Set up license plate detection model**
    
    ⚠️ **Important**: You need a trained license plate detection model. Check `models/README.md` for instructions.
@@ -51,7 +65,7 @@ To process a video and generate annotated output, run these **3 commands in sequ
 
 ```bash
 # Step 1: Vehicle and license plate detection
-python main.py --input car.mp4 --output ./results --verbose
+python main.py --input car.mp4 --output ./results --verbose --use-bytetrack --save-video ./results/annotated.mp4
 
 # Step 2: Interpolate missing data for smooth tracking
 python missing_data.py --input ./results/results.csv --output ./results/interpolated.csv
@@ -84,6 +98,8 @@ python visualize.py --csv ./results/interpolated.csv --video car.mp4 --output fi
 - `--input`: Path to input video file (required)
 - `--output`: Output directory for results (default: ./output)
 - `--verbose, -v`: Enable verbose logging
+ - `--use-bytetrack`: Use ultralytics' ByteTrack tracker (requires `lap` installed). If `lap` is missing the code will fall back to centroid tracking.
+ - `--save-video`: Path to save annotated MP4 (e.g. `results/annotated.mp4`). When provided the app will write an annotated video alongside the CSV.
 
 #### missing_data.py
 - `--input`: Input CSV file path (required)
@@ -150,6 +166,17 @@ Edit `config/config.json` to customize:
    **Solution**: Check the video file path and ensure it exists.
 
 3. **Low detection accuracy**
+4. **ByteTrack / `lap` install errors**
+   If you see errors like:
+
+   ```
+   ERROR: Command "pip install 'lap>=0.5.12'" returned non-zero exit status 1
+   ```
+
+   - Ensure you have system build tools (gcc, make) and Python dev headers installed (example for Debian/Ubuntu shown above).
+   - Install `lap` inside the activated virtualenv: `pip install lap`.
+   - If installing `lap` is not possible on your machine, run `main.py` without `--use-bytetrack` and the code will use the built-in centroid tracker (no native deps required).
+
    - Ensure good video quality and lighting
    - Check if the license plate model is trained on similar data
    - Adjust confidence thresholds in the configuration
@@ -169,14 +196,6 @@ Edit `config/config.json` to customize:
 - **Tracking Reliability**: Multi-vehicle tracking with persistent IDs
 - **Output**: Professional visualization with bounding boxes and tracking overlays
 
-## 🔮 Future Enhancements
-
-- [ ] GPU acceleration support
-- [ ] Multi-camera support
-- [ ] REST API integration
-- [ ] Real-time database integration
-- [ ] Web interface for monitoring
-- [ ] Docker containerization
 
 ## 🤝 Contributing
 
